@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NessQL Web UI</title>
+</head>
+<body>
+    <h1>NessQL Web UI</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <button type="submit">Upload</button>
+    </form>
+    
+    <hr>
+
+    <h2>Execute SQL Query</h2>
+    <select id="database-selector"></select>
+    <textarea id="sql-query" rows="5" cols="50" placeholder="Enter SQL query..."></textarea>
+    <button onclick="executeQuery()">Run Query</button>
+
+    <h3>Results:</h3>
+    <pre id="query-results"></pre>
+
+    <script>
+        function executeQuery() {
+            const db = document.getElementById("database-selector").value;
+            const query = document.getElementById("sql-query").value;
+            
+            fetch("/query", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ db, query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("query-results").innerText = JSON.stringify(data, null, 2);
+            });
+        }
+    </script>
+</body>
+</html>
