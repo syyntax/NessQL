@@ -1,0 +1,107 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Genos:ital,wght@0,100..900;1,100..900&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Sanchez:ital@0;1&display=swap');
+
+/* Font Classes */
+.pt-sans-regular {
+  font-family: "PT Sans", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.pt-sans-bold {
+  font-family: "PT Sans", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.pt-sans-regular-italic {
+  font-family: "PT Sans", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.pt-sans-bold-italic {
+  font-family: "PT Sans", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.genos {
+  font-family: "Genos", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.sanchez-regular {
+  font-family: "Sanchez", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.sanchez-regular-italic {
+  font-family: "Sanchez", serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Global Styling */
+body {
+  font-family: "PT Sans", sans-serif;
+  background-color: #1e1e2e;
+  color: #ffffff;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+h1, h2, h3 {
+  font-family: "Genos", sans-serif;
+  font-weight: 700;
+  color: #f8f8f2;
+}
+
+.container {
+  max-width: 800px;
+  padding: 20px;
+  background-color: #282a36;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+button {
+  background-color: #6272a4;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #50fa7b;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #44475a;
+  background-color: #282a36;
+  color: #ffffff;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+pre {
+  background-color: #44475a;
+  padding: 15px;
+  border-radius: 5px;
+  overflow-x: auto;
+}
