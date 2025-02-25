@@ -144,11 +144,13 @@ def run_query():
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute(query)
-
-    # Fetch column names and row data
-    columns = [desc[0] for desc in cursor.description]
-    rows = cursor.fetchall()
+    
+    try:
+        cursor.execute(query)
+        columns = [desc[0] for desc in cursor.description]  # Get column names
+        rows = cursor.fetchall()  # Get all results
+    except sqlite3.Error as e:
+        return jsonify({"error": str(e)}), 400
 
     conn.close()
 
