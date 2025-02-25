@@ -8,6 +8,7 @@ WORKDIR /app
 COPY nessql.py .
 COPY requirements.txt .
 COPY templates/ templates/
+COPY static/ static/
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
