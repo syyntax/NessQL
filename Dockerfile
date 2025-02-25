@@ -4,6 +4,9 @@ FROM python:3.11
 # Set working directory
 WORKDIR /app
 
+# Install SQLite3 CLI
+RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
+
 # Copy application files
 COPY nessql.py .
 COPY requirements.txt .

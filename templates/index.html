@@ -9,9 +9,9 @@
 <body>
     <div class="container">
         <h1>NessQL Web UI</h1>
-        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+        <form id="upload-form">
             <input type="file" name="file" id="file-input" required>
-            <button type="submit">Upload</button>
+            <button type="button" onclick="uploadFile()">Upload</button>
             <p id="file-error" style="color: red; display: none;">Only .nessus files are allowed.</p>
         </form>
         
@@ -27,17 +27,45 @@
     </div>
 
     <script>
-        document.getElementById("upload-form").addEventListener("submit", function(event) {
+        function uploadFile() {
             const fileInput = document.getElementById("file-input");
             const fileError = document.getElementById("file-error");
-            const fileName = fileInput.value;
-            if (!fileName.endsWith(".nessus")) {
-                event.preventDefault();
+            const file = fileInput.files[0];
+
+            if (!file.name.endsWith(".nessus")) {
                 fileError.style.display = "block";
-            } else {
-                fileError.style.display = "none";
+                return;
             }
-        });
+            fileError.style.display = "none";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadDatabases();
+            });
+        }
+
+        function loadDatabases() {
+            fetch("/databases")
+            .then(response => response.json())
+            .then(databases => {
+                const selector = document.getElementById("database-selector");
+                selector.innerHTML = "";
+                databases.forEach(db => {
+                    const option = document.createElement("option");
+                    option.value = db;
+                    option.textContent = db;
+                    selector.appendChild(option);
+                });
+            });
+        }
 
         function executeQuery() {
             const db = document.getElementById("database-selector").value;
@@ -53,6 +81,8 @@
                 document.getElementById("query-results").innerText = JSON.stringify(data, null, 2);
             });
         }
+
+        document.addEventListener("DOMContentLoaded", loadDatabases);
     </script>
 </body>
 </html>

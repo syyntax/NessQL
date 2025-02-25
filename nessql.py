@@ -1,41 +1,14 @@
-import argparse
 import sqlite3
 import xml.etree.ElementTree as ET
 import os
 from flask import Flask, request, render_template, jsonify
-
-def parse_nessus(nessus_file, db_path):
-    """Parses the .nessus file and populates the database."""
-    try:
-        with open(nessus_file, "r", encoding="utf-8", errors="replace") as f:
-            content = f.read()
-
-        # Ensure the file starts with a valid XML header
-        if not content.strip().startswith("<?xml"):
-            raise ValueError("Uploaded file is not a valid .nessus XML file.")
-
-        tree = ET.ElementTree(ET.fromstring(content))
-        root = tree.getroot()
-
-    except ET.ParseError as e:
-        print(f"XML Parsing Error: {e}")
-        raise ValueError(f"Invalid .nessus file format: {e}")
-    
-    except UnicodeDecodeError:
-        print("Unicode Error: The file may contain invalid characters.")
-        raise ValueError("The .nessus file contains invalid characters and cannot be parsed.")
 
 def create_database(db_path):
     """Creates the SQLite database with the required schema."""
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.executescript("""
-    DROP TABLE IF EXISTS hosts;
-    DROP TABLE IF EXISTS vulnerabilities;
-    DROP TABLE IF EXISTS open_ports;
-    DROP VIEW IF EXISTS view_ports;
-    
-    CREATE TABLE hosts (
+    CREATE TABLE IF NOT EXISTS hosts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ip TEXT UNIQUE,
         fqdn TEXT,
@@ -45,7 +18,7 @@ def create_database(db_path):
         end_time TEXT
     );
     
-    CREATE TABLE vulnerabilities (
+    CREATE TABLE IF NOT EXISTS vulnerabilities (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         host_id INTEGER,
         plugin_id INTEGER,
@@ -56,7 +29,7 @@ def create_database(db_path):
         FOREIGN KEY (host_id) REFERENCES hosts(id)
     );
     
-    CREATE TABLE open_ports (
+    CREATE TABLE IF NOT EXISTS open_ports (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         host_id INTEGER,
         port INTEGER,
@@ -65,20 +38,19 @@ def create_database(db_path):
         state TEXT,
         FOREIGN KEY (host_id) REFERENCES hosts(id)
     );
-    
-    CREATE VIEW view_ports AS 
-    SELECT hosts.id, hosts.ip, open_ports.port, open_ports.protocol, open_ports.service 
-    FROM hosts 
-    INNER JOIN open_ports ON open_ports.host_id = hosts.id 
-    WHERE NOT open_ports.port == 0;
     """)
     conn.commit()
     conn.close()
 
 def parse_nessus(nessus_file, db_path):
     """Parses the .nessus file and populates the database."""
-    tree = ET.parse(nessus_file)
-    root = tree.getroot()
+    try:
+        tree = ET.parse(nessus_file)
+        root = tree.getroot()
+    except ET.ParseError as e:
+        print(f"XML Parsing Error: {e}")
+        return
+    
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     host_ids = {}
@@ -118,45 +90,16 @@ def parse_nessus(nessus_file, db_path):
                   host_data["start_time"], host_data["end_time"]))
             
             cursor.execute("SELECT id FROM hosts WHERE ip = ?", (host_data["ip"],))
-            host_id = cursor.fetchone()[0]
-            host_ids[host.attrib.get("name")] = host_id
-    
-    # Insert vulnerabilities and open ports
-    for report in root.findall(".//Report"):
-        for host in report.findall(".//ReportHost"):
-            host_name = host.attrib.get("name")
-            host_id = host_ids.get(host_name)
-            if not host_id:
-                continue
-            
-            for item in host.findall(".//ReportItem"):
-                plugin_id = item.attrib.get("pluginID")
-                plugin_name = item.attrib.get("pluginName")
-                severity = int(item.attrib.get("severity", 0))
-                description = item.findtext("description", "").strip()
-                solution = item.findtext("solution", "").strip()
-                
-                cursor.execute("""
-                    INSERT INTO vulnerabilities (host_id, plugin_id, plugin_name, severity, description, solution)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (host_id, plugin_id, plugin_name, severity, description, solution))
-                
-                port = int(item.attrib.get("port", 0))
-                protocol = item.attrib.get("protocol", "unknown")
-                service = item.attrib.get("svc_name", "unknown")
-                state = item.findtext("plugin_output", "").strip()
-                
-                cursor.execute("""
-                    INSERT INTO open_ports (host_id, port, protocol, service, state)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (host_id, port, protocol, service, state))
+            host_id = cursor.fetchone()
+            if host_id:
+                host_ids[host.attrib.get("name")] = host_id[0]
     
     conn.commit()
     conn.close()
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
@@ -165,7 +108,7 @@ def upload_file():
     if "file" not in request.files:
         return "No file uploaded", 400
     file = request.files["file"]
-    db_path = f"{file.filename}.db"
+    db_path = os.path.join("/app/data", f"{file.filename}.db")
     file.save(file.filename)
     create_database(db_path)
     parse_nessus(file.filename, db_path)
