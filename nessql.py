@@ -90,6 +90,60 @@ def get_statistics(db_path):
         "top_ports": top_ports
     }
 
+def parse_nessus(nessus_file, db_path):
+    """Parses the .nessus file and populates the database."""
+    try:
+        tree = ET.parse(nessus_file)
+        root = tree.getroot()
+    except ET.ParseError as e:
+        print(f"XML Parsing Error: {e}")
+        return
+    
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    host_ids = {}
+    
+    for report in root.findall(".//Report"):
+        for host in report.findall(".//ReportHost"):
+            host_name = host.attrib.get("name")
+            cursor.execute("INSERT OR IGNORE INTO hosts (ip) VALUES (?)", (host_name,))
+            cursor.execute("SELECT id FROM hosts WHERE ip = ?", (host_name,))
+            host_id = cursor.fetchone()
+            if host_id:
+                host_ids[host_name] = host_id[0]
+    
+    for report in root.findall(".//Report"):
+        for host in report.findall(".//ReportHost"):
+            host_name = host.attrib.get("name")
+            host_id = host_ids.get(host_name)
+            if not host_id:
+                continue
+            
+            for item in host.findall(".//ReportItem"):
+                plugin_id = int(item.attrib.get("pluginID", 0))
+                plugin_name = item.attrib.get("pluginName", "Unknown")
+                severity = int(item.attrib.get("severity", 0))
+                description = item.findtext("description", "").strip()
+                solution = item.findtext("solution", "").strip()
+                
+                cursor.execute("""
+                    INSERT INTO vulnerabilities (host_id, plugin_id, plugin_name, severity, description, solution)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (host_id, plugin_id, plugin_name, severity, description, solution))
+                
+                port = int(item.attrib.get("port", 0))
+                protocol = item.attrib.get("protocol", "unknown")
+                service = item.attrib.get("svc_name", "unknown")
+                state = item.findtext("plugin_output", "").strip()
+                
+                cursor.execute("""
+                    INSERT INTO open_ports (host_id, port, protocol, service, state)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (host_id, port, protocol, service, state))
+    
+    conn.commit()
+    conn.close()
+
 app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
@@ -109,20 +163,12 @@ def upload_file():
     file_path = os.path.join("/app/data", file.filename)
 
     try:
-        file.save(file_path)  # Save the .nessus file first
-        print(f"File saved: {file_path}")
-
-        create_database(db_path)  # Create the database
-        print(f"Database created: {db_path}")
-
-        parse_nessus(file_path, db_path)  # Parse the .nessus file
-        print("Nessus file parsed successfully")
-
+        file.save(file_path)
+        create_database(db_path)
+        parse_nessus(file_path, db_path)
         return jsonify({"message": "Database created successfully", "db": db_path})
     except Exception as e:
-        print(f"Error processing file: {e}")
         return jsonify({"error": str(e)}), 500
-
 
 @app.route("/query", methods=["POST"])
 def run_query():
