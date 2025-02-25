@@ -23,7 +23,10 @@
         <button onclick="executeQuery()">Run Query</button>
 
         <h3>Results:</h3>
-        <pre id="query-results"></pre>
+        <table id="query-results-table" border="1">
+            <thead id="query-results-header"></thead>
+            <tbody id="query-results-body"></tbody>
+        </table>
     </div>
 
     <script>
@@ -53,7 +56,7 @@
         }
 
         function loadDatabases() {
-            fetch("/databases")  // Add an endpoint to list available databases
+            fetch("/databases")
             .then(response => response.json())
             .then(databases => {
                 const selector = document.getElementById("database-selector");
@@ -70,16 +73,44 @@
         function executeQuery() {
             const db = document.getElementById("database-selector").value;
             const query = document.getElementById("sql-query").value;
-
+            
             fetch("/query", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ db: db, query: query })
+                body: JSON.stringify({ db, query })
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("query-results").innerText = JSON.stringify(data, null, 2);
+                displayResults(data);
             });
+        }
+
+        function displayResults(data) {
+            const tableHeader = document.getElementById("query-results-header");
+            const tableBody = document.getElementById("query-results-body");
+            tableHeader.innerHTML = "";
+            tableBody.innerHTML = "";
+
+            if (data.length > 0) {
+                const headers = Object.keys(data[0]);
+                const headerRow = document.createElement("tr");
+                headers.forEach(header => {
+                    const th = document.createElement("th");
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                });
+                tableHeader.appendChild(headerRow);
+
+                data.forEach(row => {
+                    const tr = document.createElement("tr");
+                    headers.forEach(header => {
+                        const td = document.createElement("td");
+                        td.textContent = row[header];
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+            }
         }
 
         document.addEventListener("DOMContentLoaded", loadDatabases);
