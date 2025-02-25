@@ -9,9 +9,10 @@
 <body>
     <div class="container">
         <h1>NessQL Web UI</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" required>
+        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" id="file-input" required>
             <button type="submit">Upload</button>
+            <p id="file-error" style="color: red; display: none;">Only .nessus files are allowed.</p>
         </form>
         
         <hr>
@@ -26,6 +27,18 @@
     </div>
 
     <script>
+        document.getElementById("upload-form").addEventListener("submit", function(event) {
+            const fileInput = document.getElementById("file-input");
+            const fileError = document.getElementById("file-error");
+            const fileName = fileInput.value;
+            if (!fileName.endsWith(".nessus")) {
+                event.preventDefault();
+                fileError.style.display = "block";
+            } else {
+                fileError.style.display = "none";
+            }
+        });
+
         function executeQuery() {
             const db = document.getElementById("database-selector").value;
             const query = document.getElementById("sql-query").value;
