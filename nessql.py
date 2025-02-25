@@ -4,6 +4,27 @@ import xml.etree.ElementTree as ET
 import os
 from flask import Flask, request, render_template, jsonify
 
+def parse_nessus(nessus_file, db_path):
+    """Parses the .nessus file and populates the database."""
+    try:
+        with open(nessus_file, "r", encoding="utf-8", errors="replace") as f:
+            content = f.read()
+
+        # Ensure the file starts with a valid XML header
+        if not content.strip().startswith("<?xml"):
+            raise ValueError("Uploaded file is not a valid .nessus XML file.")
+
+        tree = ET.ElementTree(ET.fromstring(content))
+        root = tree.getroot()
+
+    except ET.ParseError as e:
+        print(f"XML Parsing Error: {e}")
+        raise ValueError(f"Invalid .nessus file format: {e}")
+    
+    except UnicodeDecodeError:
+        print("Unicode Error: The file may contain invalid characters.")
+        raise ValueError("The .nessus file contains invalid characters and cannot be parsed.")
+
 def create_database(db_path):
     """Creates the SQLite database with the required schema."""
     conn = sqlite3.connect(db_path)
