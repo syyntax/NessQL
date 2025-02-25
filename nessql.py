@@ -105,13 +105,45 @@ def parse_nessus(nessus_file, db_path):
     
     for report in root.findall(".//Report"):
         for host in report.findall(".//ReportHost"):
-            host_name = host.attrib.get("name")
-            cursor.execute("INSERT OR IGNORE INTO hosts (ip) VALUES (?)", (host_name,))
-            cursor.execute("SELECT id FROM hosts WHERE ip = ?", (host_name,))
+            host_data = {
+                "ip": host.attrib.get("name"),
+                "fqdn": None,
+                "os": None,
+                "credentialed_scan": None,
+                "start_time": None,
+                "end_time": None,
+            }
+            
+            for tag in host.findall(".//tag"):
+                tag_name = tag.attrib.get("name", "").lower()
+                if tag_name == "host-ip":
+                    host_data["ip"] = tag.text
+                elif tag_name == "host-fqdn":
+                    host_data["fqdn"] = tag.text
+                elif tag_name == "operating-system":
+                    host_data["os"] = tag.text
+                elif tag_name == "credentialed_scan":
+                    host_data["credentialed_scan"] = tag.text
+                elif tag_name == "host_start":
+                    host_data["start_time"] = tag.text
+                elif tag_name == "host_end":
+                    host_data["end_time"] = tag.text
+            
+            cursor.execute("""
+                INSERT INTO hosts (ip, fqdn, os, credentialed_scan, start_time, end_time)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(ip) DO UPDATE SET fqdn=excluded.fqdn, os=excluded.os, 
+                credentialed_scan=excluded.credentialed_scan, start_time=excluded.start_time, 
+                end_time=excluded.end_time;
+            """, (host_data["ip"], host_data["fqdn"], host_data["os"], host_data["credentialed_scan"],
+                  host_data["start_time"], host_data["end_time"]))
+            
+            cursor.execute("SELECT id FROM hosts WHERE ip = ?", (host_data["ip"],))
             host_id = cursor.fetchone()
             if host_id:
-                host_ids[host_name] = host_id[0]
+                host_ids[host.attrib.get("name")] = host_id[0]
     
+    # Insert vulnerabilities and open ports
     for report in root.findall(".//Report"):
         for host in report.findall(".//ReportHost"):
             host_name = host.attrib.get("name")
@@ -170,7 +202,6 @@ def upload_file():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route("/query", methods=["POST"])
 @app.route("/query", methods=["POST"])
 def run_query():
     data = request.json
