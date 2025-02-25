@@ -144,6 +144,63 @@
             });
         }
 
+        function executeQuery() {
+            const db = document.getElementById("database-selector").value;
+            const query = document.getElementById("sql-query").value;
+
+            if (!db) {
+                alert("Please select a database.");
+                return;
+            }
+
+            fetch("/query", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ db: db, query: query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    displayResults(data.columns, data.rows);
+                }
+            })
+            .catch(error => {
+                alert("Query failed: " + error);
+            });
+        }
+
+        function displayResults(columns, rows) {
+            const tableHeader = document.getElementById("query-results-header");
+            const tableBody = document.getElementById("query-results-body");
+            tableHeader.innerHTML = "";
+            tableBody.innerHTML = "";
+
+            if (columns.length > 0) {
+                const headerRow = document.createElement("tr");
+                columns.forEach(header => {
+                    const th = document.createElement("th");
+                    th.textContent = header.replace(/_/g, " ").toUpperCase();
+                    headerRow.appendChild(th);
+                });
+                tableHeader.appendChild(headerRow);
+
+                rows.forEach(row => {
+                    const tr = document.createElement("tr");
+                    row.forEach(cell => {
+                        const td = document.createElement("td");
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    tableBody.appendChild(tr);
+                });
+            } else {
+                tableBody.innerHTML = "<tr><td colspan='" + columns.length + "'>No results found</td></tr>";
+            }
+        }
+
+
         function fetchStatistics() {
             const db = document.getElementById("database-selector").value;
             fetch("/statistics", {

@@ -171,6 +171,7 @@ def upload_file():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/query", methods=["POST"])
+@app.route("/query", methods=["POST"])
 def run_query():
     data = request.json
     db_path = os.path.join("/app/data", data.get("db"))
@@ -179,16 +180,19 @@ def run_query():
     if not os.path.exists(db_path):
         return jsonify({"error": f"Database {db_path} not found"}), 400
 
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute(query)
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute(query)
 
-    columns = [desc[0] for desc in cursor.description]
-    rows = cursor.fetchall()
+        # Fetch column names
+        columns = [desc[0] for desc in cursor.description] if cursor.description else []
+        rows = cursor.fetchall()
+        conn.close()
 
-    conn.close()
-
-    return jsonify({"columns": columns, "rows": rows})
+        return jsonify({"columns": columns, "rows": rows})
+    except sqlite3.Error as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/statistics", methods=["POST"])
 def fetch_statistics():
