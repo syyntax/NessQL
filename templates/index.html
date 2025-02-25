@@ -97,7 +97,7 @@
             const fileError = document.getElementById("file-error");
             const file = fileInput.files[0];
 
-            if (!file.name.endsWith(".nessus")) {
+            if (!file || !file.name.endsWith(".nessus")) {
                 fileError.style.display = "block";
                 return;
             }
@@ -112,8 +112,17 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
-                loadDatabases();
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else if (data.message) {
+                    alert(data.message);
+                    loadDatabases();
+                } else {
+                    alert("Unexpected server response.");
+                }
+            })
+            .catch(error => {
+                alert("Upload failed: " + error);
             });
         }
 
