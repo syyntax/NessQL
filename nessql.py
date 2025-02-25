@@ -252,10 +252,12 @@ def query_plugin():
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT vulnerabilities.plugin_name, hosts.ip 
-            FROM vulnerabilities 
-            INNER JOIN hosts ON vulnerabilities.host_id = hosts.id 
-            WHERE vulnerabilities.plugin_name LIKE ?
+            SELECT vulnerabilities.plugin_id, vulnerabilities.plugin_name, severity, hosts.ip, description, solution
+            FROM vulnerabilities
+            INNER JOIN hosts ON vulnerabilities.host_id = hosts.id
+            WHERE plugin_name LIKE ?
+            GROUP BY hosts.ip
+            ORDER BY severity;
         """, (f"%{plugin_name}%",))
 
         columns = [desc[0] for desc in cursor.description]
