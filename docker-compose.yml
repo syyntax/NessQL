@@ -1,9 +1,21 @@
-version: '3'
+version: '3.8'
+
 services:
   nessql:
     build: .
+    container_name: nessql_1
     ports:
       - "5000:5000"
     volumes:
-      - .:/app
-    container_name: nessql_container
+      - nessql_data:/app/data
+    networks:
+      - nessql_network
+    restart: unless-stopped
+
+volumes:
+  nessql_data:
+    driver: local
+
+networks:
+  nessql_network:
+    driver: bridge
