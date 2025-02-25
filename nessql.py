@@ -77,41 +77,42 @@ def parse_nessus(nessus_file, db_path):
     # Insert hosts
     for report in root.findall(".//Report"):
         for host in report.findall(".//ReportHost"):
-            host_data = {
-                "ip": host.attrib.get("name"),
-                "fqdn": None,
-                "os": None,
-                "credentialed_scan": None,
-                "start_time": None,
-                "end_time": None,
-            }
-            
-            for tag in host.findall(".//tag"):
-                tag_name = tag.attrib.get("name", "").lower()
-                if tag_name == "host-ip":
-                    host_data["ip"] = tag.text
-                elif tag_name == "host-fqdn":
-                    host_data["fqdn"] = tag.text
-                elif tag_name == "operating-system":
-                    host_data["os"] = tag.text
-                elif tag_name == "credentialed_scan":
-                    host_data["credentialed_scan"] = tag.text
-                elif tag_name == "host_start":
-                    host_data["start_time"] = tag.text
-                elif tag_name == "host_end":
-                    host_data["end_time"] = tag.text
-            
-            cursor.execute("""
-                INSERT INTO hosts (ip, fqdn, os, credentialed_scan, start_time, end_time)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT(ip) DO NOTHING
-            """, (host_data["ip"], host_data["fqdn"], host_data["os"], host_data["credentialed_scan"],
-                  host_data["start_time"], host_data["end_time"]))
-            
-            cursor.execute("SELECT id FROM hosts WHERE ip = ?", (host_data["ip"],))
+            host_name = host.attrib.get("name")
+            cursor.execute("INSERT OR IGNORE INTO hosts (ip) VALUES (?)", (host_name,))
+            cursor.execute("SELECT id FROM hosts WHERE ip = ?", (host_name,))
             host_id = cursor.fetchone()
             if host_id:
-                host_ids[host.attrib.get("name")] = host_id[0]
+                host_ids[host_name] = host_id[0]
+    
+    # Insert vulnerabilities and open ports
+    for report in root.findall(".//Report"):
+        for host in report.findall(".//ReportHost"):
+            host_name = host.attrib.get("name")
+            host_id = host_ids.get(host_name)
+            if not host_id:
+                continue
+            
+            for item in host.findall(".//ReportItem"):
+                plugin_id = int(item.attrib.get("pluginID", 0))
+                plugin_name = item.attrib.get("pluginName", "Unknown")
+                severity = int(item.attrib.get("severity", 0))
+                description = item.findtext("description", "").strip()
+                solution = item.findtext("solution", "").strip()
+                
+                cursor.execute("""
+                    INSERT INTO vulnerabilities (host_id, plugin_id, plugin_name, severity, description, solution)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (host_id, plugin_id, plugin_name, severity, description, solution))
+                
+                port = int(item.attrib.get("port", 0))
+                protocol = item.attrib.get("protocol", "unknown")
+                service = item.attrib.get("svc_name", "unknown")
+                state = item.findtext("plugin_output", "").strip()
+                
+                cursor.execute("""
+                    INSERT INTO open_ports (host_id, port, protocol, service, state)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (host_id, port, protocol, service, state))
     
     conn.commit()
     conn.close()
@@ -144,13 +145,10 @@ def run_query():
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
-    try:
-        cursor.execute(query)
-        columns = [desc[0] for desc in cursor.description]  # Get column names
-        rows = cursor.fetchall()  # Get all results
-    except sqlite3.Error as e:
-        return jsonify({"error": str(e)}), 400
+    cursor.execute(query)
+
+    columns = [desc[0] for desc in cursor.description]
+    rows = cursor.fetchall()
 
     conn.close()
 
