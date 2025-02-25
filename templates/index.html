@@ -96,7 +96,7 @@
                 const headerRow = document.createElement("tr");
                 headers.forEach(header => {
                     const th = document.createElement("th");
-                    th.textContent = header;
+                    th.textContent = header.replace(/_/g, " ").toUpperCase(); // Format field names as headers
                     headerRow.appendChild(th);
                 });
                 tableHeader.appendChild(headerRow);
