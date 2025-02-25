@@ -99,13 +99,30 @@ def index():
 @app.route("/upload", methods=["POST"])
 def upload_file():
     if "file" not in request.files:
-        return "No file uploaded", 400
+        return jsonify({"error": "No file uploaded"}), 400
+
     file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
+
     db_path = os.path.join("/app/data", f"{file.filename}.db")
-    file.save(file.filename)
-    create_database(db_path)
-    parse_nessus(file.filename, db_path)
-    return jsonify({"message": "Database created successfully", "db": db_path})
+    file_path = os.path.join("/app/data", file.filename)
+
+    try:
+        file.save(file_path)  # Save the .nessus file first
+        print(f"File saved: {file_path}")
+
+        create_database(db_path)  # Create the database
+        print(f"Database created: {db_path}")
+
+        parse_nessus(file_path, db_path)  # Parse the .nessus file
+        print("Nessus file parsed successfully")
+
+        return jsonify({"message": "Database created successfully", "db": db_path})
+    except Exception as e:
+        print(f"Error processing file: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/query", methods=["POST"])
 def run_query():
