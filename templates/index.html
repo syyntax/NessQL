@@ -5,38 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NessQL Web UI</title>
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        body {
-            display: flex;
-        }
-        .left-pane, .right-pane {
-            width: 20%;
-            height: 100vh;
-            background-color: #282a36;
-            color: white;
-            padding: 20px;
-            box-shadow: 2px 0px 10px rgba(0, 0, 0, 0.3);
-        }
-        .left-pane {
-            position: fixed;
-            left: 0;
-            top: 0;
-        }
-        .right-pane {
-            position: fixed;
-            right: 0;
-            top: 0;
-        }
-        .container {
-            margin-left: 22%;
-            margin-right: 22%;
-            width: 100%;
-            padding: 20px;
-        }
-        .section {
-            margin-bottom: 20px;
-        }
-    </style>
 </head>
 <body>
     <div class="left-pane">
@@ -68,7 +36,7 @@
     
     <div class="container">
         <h1>NessQL Web UI</h1>
-    
+
         <!-- Upload Section -->
         <div class="upload-section">
             <h2>Upload Nessus File</h2>
@@ -78,20 +46,20 @@
                 <p id="file-error" style="color: red; display: none;">Only .nessus files are allowed.</p>
             </form>
         </div>
-    
+
         <!-- Database Selection -->
         <div class="database-section">
             <h2>Select Database</h2>
             <select id="database-selector"></select>
         </div>
-    
+
         <hr>
-    
+
         <!-- Query Section -->
         <h2>Execute SQL Query</h2>
         <textarea id="sql-query" rows="5" cols="50" placeholder="Enter SQL query..."></textarea>
         <button onclick="executeQuery()">Run Query</button>
-    
+
         <h3>Results:</h3>
         <table id="query-results-table" border="1">
             <thead id="query-results-header"></thead>
@@ -107,5 +75,52 @@
             <tbody></tbody>
         </table>
     </div>
+    
+    <script>
+        function uploadFile() {
+            const fileInput = document.getElementById("file-input");
+            const fileError = document.getElementById("file-error");
+            const file = fileInput.files[0];
+
+            if (!file.name.endsWith(".nessus")) {
+                fileError.style.display = "block";
+                return;
+            }
+            fileError.style.display = "none";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            fetch("/upload", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadDatabases();
+            });
+        }
+
+        function loadDatabases() {
+            fetch("/databases")
+            .then(response => response.json())
+            .then(databases => {
+                const selector = document.getElementById("database-selector");
+                selector.innerHTML = "";
+                databases.forEach(db => {
+                    const option = document.createElement("option");
+                    option.value = db;
+                    option.textContent = db;
+                    selector.appendChild(option);
+                });
+                if (databases.length > 0) {
+                    fetchStatistics(databases[0]); // Load stats for the first DB
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", loadDatabases);
+    </script>
 </body>
 </html>
