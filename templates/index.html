@@ -98,7 +98,7 @@
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                loadDatabases();
+                loadDatabases(); // Reload database list after upload
             });
         }
 
@@ -162,6 +162,8 @@
                     });
                     tableBody.appendChild(tr);
                 });
+            } else {
+                tableBody.innerHTML = "<tr><td colspan='" + columns.length + "'>No results found</td></tr>";
             }
         }
 
