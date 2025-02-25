@@ -136,5 +136,10 @@ def run_query():
     conn.close()
     return jsonify(results)
 
+@app.route("/databases", methods=["GET"])
+def list_databases():
+    db_files = [f for f in os.listdir("/app/data") if f.endswith(".db")]
+    return jsonify(db_files)
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

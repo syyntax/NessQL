@@ -53,7 +53,7 @@
         }
 
         function loadDatabases() {
-            fetch("/databases")
+            fetch("/databases")  // Add an endpoint to list available databases
             .then(response => response.json())
             .then(databases => {
                 const selector = document.getElementById("database-selector");
@@ -70,11 +70,11 @@
         function executeQuery() {
             const db = document.getElementById("database-selector").value;
             const query = document.getElementById("sql-query").value;
-            
+
             fetch("/query", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ db, query })
+                body: JSON.stringify({ db: db, query: query })
             })
             .then(response => response.json())
             .then(data => {
