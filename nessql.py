@@ -38,6 +38,14 @@ def create_database(db_path):
         state TEXT,
         FOREIGN KEY (host_id) REFERENCES hosts(id)
     );
+    CREATE VIEW view_ports AS
+    SELECT hosts.id, hosts.ip, open_ports.port, open_ports.protocol, open_ports.service
+    FROM hosts
+    INNER JOIN open_ports ON open_ports.host_id = hosts.id
+    WHERE NOT open_ports.port == 0
+    /* view_ports(id,ip,port,protocol,service) */;
+    CREATE VIEW vuln_instances AS SELECT id, plugin_name, COUNT(*) AS count, CASE WHEN severity = 1 THEN 'Low' WHEN severity = 2 THEN 'Medium' WHEN severity = 3 THEN 'High' WHEN severity = 4 THEN 'Critical' ELSE 'Info' END AS severity_level FROM vulnerabilities GROUP BY plugin_name, severity ORDER BY severity DESC
+    /* vuln_instances(id,plugin_name,count,severity_level) */;
     """)
     conn.commit()
     conn.close()

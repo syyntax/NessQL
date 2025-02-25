@@ -14,35 +14,10 @@
   font-style: normal;
 }
 
-.pt-sans-regular-italic {
-  font-family: "PT Sans", sans-serif;
-  font-weight: 400;
-  font-style: italic;
-}
-
-.pt-sans-bold-italic {
-  font-family: "PT Sans", sans-serif;
-  font-weight: 700;
-  font-style: italic;
-}
-
-.genos {
-  font-family: "Genos", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-}
-
 .sanchez-regular {
   font-family: "Sanchez", serif;
   font-weight: 400;
   font-style: normal;
-}
-
-.sanchez-regular-italic {
-  font-family: "Sanchez", serif;
-  font-weight: 400;
-  font-style: italic;
 }
 
 /* Global Styling */
@@ -53,24 +28,43 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+}
+
+.left-pane, .right-pane {
+  width: 20%;
   height: 100vh;
+  background-color: #282a36;
+  color: white;
+  padding: 20px;
+  box-shadow: 2px 0px 10px rgba(0, 0, 0, 0.3);
+  position: fixed;
+  top: 0;
+  overflow-y: auto;
+}
+
+.left-pane {
+  left: 0;
+}
+
+.right-pane {
+  right: 0;
+}
+
+.container {
+  margin-left: 22%;
+  margin-right: 22%;
+  width: 100%;
+  padding: 20px;
+}
+
+.section {
+  margin-bottom: 20px;
 }
 
 h1, h2, h3 {
   font-family: "Genos", sans-serif;
   font-weight: 700;
   color: #f8f8f2;
-}
-
-.container {
-  max-width: 800px;
-  padding: 20px;
-  background-color: #282a36;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 button {
@@ -99,9 +93,44 @@ input, textarea, select {
   font-size: 16px;
 }
 
-pre {
+/* Modern Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #2b2d42;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+thead {
+  background-color: #6272a4;
+  color: white;
+}
+
+thead tr {
+  border-bottom: 2px solid #44475a;
+}
+
+thead th {
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+}
+
+tbody tr {
+  border-bottom: 1px solid #44475a;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #373a50;
+}
+
+tbody tr:hover {
   background-color: #44475a;
-  padding: 15px;
-  border-radius: 5px;
-  overflow-x: auto;
+}
+
+td {
+  padding: 12px;
+  color: white;
 }
