@@ -95,7 +95,7 @@
                 const headerRow = document.createElement("tr");
                 columns.forEach(header => {
                     const th = document.createElement("th");
-                    th.textContent = header.replace(/_/g, " ").toUpperCase(); // Format field names as headers
+                    th.textContent = header.replace(/_/g, " ").toUpperCase();
                     headerRow.appendChild(th);
                 });
                 tableHeader.appendChild(headerRow);
@@ -109,6 +109,8 @@
                     });
                     tableBody.appendChild(tr);
                 });
+            } else {
+                tableBody.innerHTML = "<tr><td colspan='" + columns.length + "'>No results found</td></tr>";
             }
         }
 

@@ -117,24 +117,23 @@ def upload_file():
 @app.route("/query", methods=["POST"])
 def run_query():
     data = request.json
-    db_name = data.get("db")  # Ensure we only get the database name, not the full path
-    db_path = os.path.join("/app/data", db_name)  # Ensure correct path
+    db_path = os.path.join("/app/data", data.get("db"))
     query = data.get("query")
 
     if not os.path.exists(db_path):
-        return jsonify({"error": f"Database {db_name} not found"}), 400
+        return jsonify({"error": f"Database {db_path} not found"}), 400
 
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+    cursor.execute(query)
 
-    try:
-        cursor.execute(query)
-        results = cursor.fetchall()
-    except sqlite3.Error as e:
-        results = {"error": str(e)}
+    # Fetch column names and row data
+    columns = [desc[0] for desc in cursor.description]
+    rows = cursor.fetchall()
 
     conn.close()
-    return jsonify(results)
+
+    return jsonify({"columns": columns, "rows": rows})
 
 @app.route("/databases", methods=["GET"])
 def list_databases():
