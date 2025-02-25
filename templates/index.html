@@ -68,19 +68,30 @@
     
     <div class="container">
         <h1>NessQL Web UI</h1>
-        <form id="upload-form">
-            <input type="file" name="file" id="file-input" required>
-            <button type="button" onclick="uploadFile()">Upload</button>
-            <p id="file-error" style="color: red; display: none;">Only .nessus files are allowed.</p>
-        </form>
-        
+    
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Nessus File</h2>
+            <form id="upload-form">
+                <input type="file" name="file" id="file-input" required>
+                <button type="button" onclick="uploadFile()">Upload</button>
+                <p id="file-error" style="color: red; display: none;">Only .nessus files are allowed.</p>
+            </form>
+        </div>
+    
+        <!-- Database Selection -->
+        <div class="database-section">
+            <h2>Select Database</h2>
+            <select id="database-selector"></select>
+        </div>
+    
         <hr>
-
+    
+        <!-- Query Section -->
         <h2>Execute SQL Query</h2>
-        <select id="database-selector"></select>
         <textarea id="sql-query" rows="5" cols="50" placeholder="Enter SQL query..."></textarea>
         <button onclick="executeQuery()">Run Query</button>
-
+    
         <h3>Results:</h3>
         <table id="query-results-table" border="1">
             <thead id="query-results-header"></thead>
