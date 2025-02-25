@@ -4,23 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NessQL Web UI</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h1>NessQL Web UI</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" required>
-        <button type="submit">Upload</button>
-    </form>
-    
-    <hr>
+    <div class="container">
+        <h1>NessQL Web UI</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+        
+        <hr>
 
-    <h2>Execute SQL Query</h2>
-    <select id="database-selector"></select>
-    <textarea id="sql-query" rows="5" cols="50" placeholder="Enter SQL query..."></textarea>
-    <button onclick="executeQuery()">Run Query</button>
+        <h2>Execute SQL Query</h2>
+        <select id="database-selector"></select>
+        <textarea id="sql-query" rows="5" cols="50" placeholder="Enter SQL query..."></textarea>
+        <button onclick="executeQuery()">Run Query</button>
 
-    <h3>Results:</h3>
-    <pre id="query-results"></pre>
+        <h3>Results:</h3>
+        <pre id="query-results"></pre>
+    </div>
 
     <script>
         function executeQuery() {
