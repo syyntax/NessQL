@@ -91,7 +91,7 @@
         </table>
     </div>
     
-    <script>
+    <!--<script>
         function uploadFile() {
             const fileInput = document.getElementById("file-input");
             const fileError = document.getElementById("file-error");
@@ -188,9 +188,19 @@
 
                 rows.forEach(row => {
                     const tr = document.createElement("tr");
-                    row.forEach(cell => {
+                    row.forEach((cell, index) => {
                         const td = document.createElement("td");
-                        td.textContent = cell;
+
+                        // If the column is "plugin_name", make it clickable
+                        if (columns[index] === "plugin_name") {
+                            const link = document.createElement("a");
+                            link.href = "#";
+                            link.textContent = cell;
+                            link.onclick = () => fetchPluginDetails(cell);
+                            td.appendChild(link);
+                        } else {
+                            td.textContent = cell;
+                        }
                         tr.appendChild(td);
                     });
                     tableBody.appendChild(tr);
@@ -199,7 +209,6 @@
                 tableBody.innerHTML = "<tr><td colspan='" + columns.length + "'>No results found</td></tr>";
             }
         }
-
 
         function fetchStatistics() {
             const db = document.getElementById("database-selector").value;
@@ -231,8 +240,28 @@
                 });
             });
         }
+        function fetchPluginDetails(pluginName) {
+            const db = document.getElementById("database-selector").value;
+
+            fetch("/query_plugin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ db: db, plugin_name: pluginName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    displayResults(data.columns, data.rows); // Display results in table
+                }
+            })
+            .catch(error => {
+                alert("Query failed: " + error);
+            });
+        }
 
         document.addEventListener("DOMContentLoaded", loadDatabases);
-    </script>
+    </script>-->
 </body>
 </html>

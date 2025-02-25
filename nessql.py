@@ -238,5 +238,33 @@ def list_databases():
     db_files = [f for f in os.listdir("/app/data") if f.endswith(".db")]
     return jsonify(db_files)
 
+@app.route("/query_plugin", methods=["POST"])
+def query_plugin():
+    """Queries the database for hosts affected by a specific plugin_name."""
+    data = request.json
+    db_path = os.path.join("/app/data", data.get("db"))
+    plugin_name = data.get("plugin_name")
+
+    if not os.path.exists(db_path):
+        return jsonify({"error": f"Database {db_path} not found"}), 400
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT vulnerabilities.plugin_name, hosts.ip 
+            FROM vulnerabilities 
+            INNER JOIN hosts ON vulnerabilities.host_id = hosts.id 
+            WHERE vulnerabilities.plugin_name LIKE ?
+        """, (f"%{plugin_name}%",))
+
+        columns = [desc[0] for desc in cursor.description]
+        rows = cursor.fetchall()
+        conn.close()
+
+        return jsonify({"columns": columns, "rows": rows})
+    except sqlite3.Error as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
