@@ -61,61 +61,34 @@ def create_database(db_path):
     conn.commit()
     conn.close()
 
-def parse_nessus(nessus_file, db_path):
-    """Parses the .nessus file and populates the database."""
-    try:
-        tree = ET.parse(nessus_file)
-        root = tree.getroot()
-    except ET.ParseError as e:
-        print(f"XML Parsing Error: {e}")
-        return
-    
+def get_statistics(db_path):
+    """Fetches scan statistics."""
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    host_ids = {}
     
-    # Insert hosts
-    for report in root.findall(".//Report"):
-        for host in report.findall(".//ReportHost"):
-            host_name = host.attrib.get("name")
-            cursor.execute("INSERT OR IGNORE INTO hosts (ip) VALUES (?)", (host_name,))
-            cursor.execute("SELECT id FROM hosts WHERE ip = ?", (host_name,))
-            host_id = cursor.fetchone()
-            if host_id:
-                host_ids[host_name] = host_id[0]
+    cursor.execute("SELECT COUNT(*) FROM hosts;")
+    total_hosts = cursor.fetchone()[0]
     
-    # Insert vulnerabilities and open ports
-    for report in root.findall(".//Report"):
-        for host in report.findall(".//ReportHost"):
-            host_name = host.attrib.get("name")
-            host_id = host_ids.get(host_name)
-            if not host_id:
-                continue
-            
-            for item in host.findall(".//ReportItem"):
-                plugin_id = int(item.attrib.get("pluginID", 0))
-                plugin_name = item.attrib.get("pluginName", "Unknown")
-                severity = int(item.attrib.get("severity", 0))
-                description = item.findtext("description", "").strip()
-                solution = item.findtext("solution", "").strip()
-                
-                cursor.execute("""
-                    INSERT INTO vulnerabilities (host_id, plugin_id, plugin_name, severity, description, solution)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (host_id, plugin_id, plugin_name, severity, description, solution))
-                
-                port = int(item.attrib.get("port", 0))
-                protocol = item.attrib.get("protocol", "unknown")
-                service = item.attrib.get("svc_name", "unknown")
-                state = item.findtext("plugin_output", "").strip()
-                
-                cursor.execute("""
-                    INSERT INTO open_ports (host_id, port, protocol, service, state)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (host_id, port, protocol, service, state))
+    cursor.execute("""
+        SELECT severity, COUNT(*) FROM vulnerabilities
+        GROUP BY severity ORDER BY severity DESC;
+    """)
+    severity_counts = {row[0]: row[1] for row in cursor.fetchall()}
     
-    conn.commit()
+    cursor.execute("SELECT port, COUNT(*) AS count FROM open_ports GROUP BY port ORDER BY count DESC LIMIT 10;")
+    top_ports = cursor.fetchall()
+    
+    cursor.execute("SELECT ip FROM hosts LIMIT 1;")
+    scan_name = cursor.fetchone()[0] if total_hosts > 0 else "Unknown Scan"
+    
     conn.close()
+    
+    return {
+        "scan_name": scan_name,
+        "total_hosts": total_hosts,
+        "severity_counts": severity_counts,
+        "top_ports": top_ports
+    }
 
 app = Flask(__name__)
 
@@ -153,6 +126,14 @@ def run_query():
     conn.close()
 
     return jsonify({"columns": columns, "rows": rows})
+
+@app.route("/statistics", methods=["POST"])
+def fetch_statistics():
+    data = request.json
+    db_path = os.path.join("/app/data", data.get("db"))
+    if not os.path.exists(db_path):
+        return jsonify({"error": "Database not found"}), 400
+    return jsonify(get_statistics(db_path))
 
 @app.route("/databases", methods=["GET"])
 def list_databases():

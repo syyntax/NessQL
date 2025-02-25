@@ -50,7 +50,7 @@
         <!-- Database Selection -->
         <div class="database-section">
             <h2>Select Database</h2>
-            <select id="database-selector"></select>
+            <select id="database-selector" onchange="fetchStatistics()"></select>
         </div>
 
         <hr>
@@ -68,11 +68,26 @@
     </div>
     
     <div class="right-pane">
-        <h2>Default Statistics</h2>
-        <h3>Top Vulnerabilities</h3>
-        <table id="vuln-table">
-            <thead></thead>
-            <tbody></tbody>
+        <h2>Scan Summary</h2>
+        <p><strong>Scan Name:</strong> <span id="scan-name">N/A</span></p>
+        <p><strong>Total Hosts Scanned:</strong> <span id="total-hosts">0</span></p>
+    
+        <h3>Severity Counts</h3>
+        <ul id="severity-list">
+            <li>Critical: <span id="critical-count">0</span></li>
+            <li>High: <span id="high-count">0</span></li>
+            <li>Medium: <span id="medium-count">0</span></li>
+            <li>Low: <span id="low-count">0</span></li>
+            <li>Info: <span id="info-count">0</span></li>
+        </ul>
+    
+        <h3>Top 10 Common Ports</h3>
+        <table>
+            <thead>
+                <tr><th>Port</th><th>Count</th></tr>
+            </thead>
+            <tbody id="top-ports-table">
+            </tbody>
         </table>
     </div>
     
@@ -98,7 +113,7 @@
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                loadDatabases(); // Reload database list after upload
+                loadDatabases();
             });
         }
 
@@ -115,56 +130,40 @@
                     selector.appendChild(option);
                 });
                 if (databases.length > 0) {
-                    fetchStatistics(databases[0]); // Load stats for the first DB
+                    fetchStatistics(databases[0]);
                 }
             });
         }
-        function executeQuery() {
-            const db = document.getElementById("database-selector").value;
-            const query = document.getElementById("sql-query").value;
 
-            fetch("/query", {
+        function fetchStatistics() {
+            const db = document.getElementById("database-selector").value;
+            fetch("/statistics", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ db: db, query: query })
+                body: JSON.stringify({ db })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.error) {
-                    alert("Error: " + data.error);
-                } else {
-                    displayResults(data.columns, data.rows);
-                }
-            });
-        }
-
-        function displayResults(columns, rows) {
-            const tableHeader = document.getElementById("query-results-header");
-            const tableBody = document.getElementById("query-results-body");
-            tableHeader.innerHTML = "";
-            tableBody.innerHTML = "";
-
-            if (columns.length > 0) {
-                const headerRow = document.createElement("tr");
-                columns.forEach(header => {
-                    const th = document.createElement("th");
-                    th.textContent = header.replace(/_/g, " ").toUpperCase();
-                    headerRow.appendChild(th);
-                });
-                tableHeader.appendChild(headerRow);
-
-                rows.forEach(row => {
+                document.getElementById("scan-name").textContent = data.scan_name;
+                document.getElementById("total-hosts").textContent = data.total_hosts;
+                document.getElementById("critical-count").textContent = data.severity_counts[4] || 0;
+                document.getElementById("high-count").textContent = data.severity_counts[3] || 0;
+                document.getElementById("medium-count").textContent = data.severity_counts[2] || 0;
+                document.getElementById("low-count").textContent = data.severity_counts[1] || 0;
+                document.getElementById("info-count").textContent = data.severity_counts[0] || 0;
+                
+                const topPortsTable = document.getElementById("top-ports-table");
+                topPortsTable.innerHTML = "";
+                data.top_ports.forEach(row => {
                     const tr = document.createElement("tr");
                     row.forEach(cell => {
                         const td = document.createElement("td");
                         td.textContent = cell;
                         tr.appendChild(td);
                     });
-                    tableBody.appendChild(tr);
+                    topPortsTable.appendChild(tr);
                 });
-            } else {
-                tableBody.innerHTML = "<tr><td colspan='" + columns.length + "'>No results found</td></tr>";
-            }
+            });
         }
 
         document.addEventListener("DOMContentLoaded", loadDatabases);
