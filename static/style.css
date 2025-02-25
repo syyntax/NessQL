@@ -134,3 +134,15 @@ td {
   padding: 12px;
   color: white;
 }
+
+/* Plugin Name Link Styles */
+td a {
+  text-decoration: none;
+  color: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+td a:hover {
+  text-decoration: underline;
+}
