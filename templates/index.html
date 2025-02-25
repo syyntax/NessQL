@@ -81,31 +81,30 @@
             })
             .then(response => response.json())
             .then(data => {
-                displayResults(data);
+                displayResults(data.columns, data.rows);
             });
         }
 
-        function displayResults(data) {
+        function displayResults(columns, rows) {
             const tableHeader = document.getElementById("query-results-header");
             const tableBody = document.getElementById("query-results-body");
             tableHeader.innerHTML = "";
             tableBody.innerHTML = "";
 
-            if (data.length > 0) {
-                const headers = Object.keys(data[0]);
+            if (columns.length > 0) {
                 const headerRow = document.createElement("tr");
-                headers.forEach(header => {
+                columns.forEach(header => {
                     const th = document.createElement("th");
                     th.textContent = header.replace(/_/g, " ").toUpperCase(); // Format field names as headers
                     headerRow.appendChild(th);
                 });
                 tableHeader.appendChild(headerRow);
 
-                data.forEach(row => {
+                rows.forEach(row => {
                     const tr = document.createElement("tr");
-                    headers.forEach(header => {
+                    row.forEach(cell => {
                         const td = document.createElement("td");
-                        td.textContent = row[header];
+                        td.textContent = cell;
                         tr.appendChild(td);
                     });
                     tableBody.appendChild(tr);
