@@ -78,8 +78,8 @@ def get_statistics(db_path):
     cursor.execute("SELECT port, protocol, COUNT(DISTINCT(host_id)) AS count FROM open_ports WHERE NOT port = 0 GROUP BY port ORDER BY count DESC LIMIT 10;")
     top_ports = cursor.fetchall()
     
-    cursor.execute("SELECT ip FROM hosts LIMIT 1;")
-    scan_name = cursor.fetchone()[0] if total_hosts > 0 else "Unknown Scan"
+    cursor.execute("PRAGMA database_list;")
+    scan_name = cursor.fetchone()[2] if total_hosts > 0 else "Unknown Scan"
     
     conn.close()
     
