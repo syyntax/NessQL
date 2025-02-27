@@ -205,16 +205,54 @@ function fetchPluginDetails(pluginName) {
     });
 }
 
-function showModal(data) {
-    document.getElementById("plugin-title").textContent = data[1];  // plugin_name
-    document.getElementById("plugin-id").textContent = data[0];  // plugin_id
-    document.getElementById("plugin-severity").textContent = getSeverityLabel(data[2]);  // severity
-    document.getElementById("plugin-description").textContent = data[4];  // description
-    document.getElementById("plugin-synopsis").textContent = data[5];  // synopsis
-    document.getElementById("plugin-see-also").textContent = data[6];  // see_also
-    document.getElementById("plugin-output").textContent = data[7];  // plugin_output
+function showModal(columns, data) {
+    const modal = document.getElementById("plugin-modal");
+    const hostsTableBody = document.getElementById("affected-hosts");
+    const severityDropdown = document.getElementById("plugin-severity");
 
-    document.getElementById("plugin-modal").style.display = "block";
+    if (!modal || !hostsTableBody || !severityDropdown) {
+        alert("Error: Modal elements not found.");
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        alert("No data found.");
+        return;
+    }
+
+    const pluginData = data[0];
+
+    document.getElementById("plugin-title").textContent = pluginData[1];  // plugin_name
+    document.getElementById("plugin-id").textContent = pluginData[0];  // plugin_id
+
+    // Set the correct severity in the dropdown
+    severityDropdown.innerHTML = `
+        <option value="4">Critical</option>
+        <option value="3">High</option>
+        <option value="2">Medium</option>
+        <option value="1">Low</option>
+        <option value="0">Info</option>
+        <option value="5">False Positive</option>
+    `;
+    severityDropdown.value = pluginData[2];  // Set current severity as selected
+
+    document.getElementById("plugin-description").textContent = pluginData[4];  // description
+    document.getElementById("plugin-synopsis").textContent = pluginData[6];  // synopsis
+    document.getElementById("plugin-see-also").textContent = pluginData[7];  // see_also
+    document.getElementById("plugin-output").textContent = pluginData[8];  // plugin_output
+
+    // Populate affected hosts table
+    hostsTableBody.innerHTML = ""; // Clear existing data
+
+    data.forEach(row => {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.textContent = row[3]; // IP Address
+        tr.appendChild(td);
+        hostsTableBody.appendChild(tr);
+    });
+
+    modal.style.display = "block"; // Show the modal
 }
 
 function closeModal() {

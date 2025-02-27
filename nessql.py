@@ -55,6 +55,7 @@ def create_database(db_path):
                WHEN severity = 2 THEN 'Medium'
                WHEN severity = 3 THEN 'High'
                WHEN severity = 4 THEN 'Critical'
+               WHEN severity = 5 THEN 'False Positive'
                ELSE 'Info'
            END AS severity_level
     FROM vulnerabilities
