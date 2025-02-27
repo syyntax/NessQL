@@ -91,6 +91,19 @@
             </tbody>
         </table>
     </div>
+
+    <div id="plugin-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="plugin-title"></h2>
+            <p><strong>Plugin ID:</strong> <span id="plugin-id"></span></p>
+            <p><strong>Severity:</strong> <span id="plugin-severity"></span></p>
+            <p><strong>Description:</strong> <span id="plugin-description"></span></p>
+            <p><strong>Synopsis:</strong> <span id="plugin-synopsis"></span></p>
+            <p><strong>References:</strong> <span id="plugin-see-also"></span></p>
+            <p><strong>Plugin Output:</strong> <span id="plugin-output"></span></p>
+        </div>
+    </div>
     
     <!--<script>
         function uploadFile() {

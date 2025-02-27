@@ -26,6 +26,9 @@ def create_database(db_path):
         severity INTEGER,
         description TEXT,
         solution TEXT,
+        synopsis TEXT,
+        see_also TEXT,
+        plugin_output TEXT,
         FOREIGN KEY (host_id) REFERENCES hosts(id)
     );
     
@@ -151,17 +154,20 @@ def parse_nessus(nessus_file, db_path):
             if not host_id:
                 continue
             
-            for item in host.findall(".//ReportItem"):
+             for item in host.findall(".//ReportItem"):
                 plugin_id = int(item.attrib.get("pluginID", 0))
                 plugin_name = item.attrib.get("pluginName", "Unknown")
                 severity = int(item.attrib.get("severity", 0))
                 description = item.findtext("description", "").strip()
                 solution = item.findtext("solution", "").strip()
+                synopsis = item.findtext("synopsis", "").strip()
+                see_also = item.findtext("see_also", "").strip()
+                plugin_output = item.findtext("plugin_output", "").strip()
                 
                 cursor.execute("""
-                    INSERT INTO vulnerabilities (host_id, plugin_id, plugin_name, severity, description, solution)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (host_id, plugin_id, plugin_name, severity, description, solution))
+                    INSERT INTO vulnerabilities (host_id, plugin_id, plugin_name, severity, description, solution, synopsis, see_also, plugin_output)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (host_id, plugin_id, plugin_name, severity, description, solution, synopsis, see_also, plugin_output))
                 
                 port = int(item.attrib.get("port", 0))
                 protocol = item.attrib.get("protocol", "unknown")

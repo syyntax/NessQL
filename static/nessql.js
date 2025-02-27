@@ -79,6 +79,27 @@ function executeQuery() {
     });
 }
 
+function fetchPluginDetails(pluginName) {
+    const db = document.getElementById("database-selector").value;
+
+    fetch("/query_plugin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ db: db, plugin_name: pluginName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert("Error: " + data.error);
+        } else {
+            showModal(data.rows[0]);
+        }
+    })
+    .catch(error => {
+        alert("Query failed: " + error);
+    });
+}
+
 function displayResults(columns, rows) {
     const tableHeader = document.getElementById("query-results-header");
     const tableBody = document.getElementById("query-results-body");
@@ -118,6 +139,18 @@ function displayResults(columns, rows) {
     }
 }
 
+function showModal(data) {
+    document.getElementById("plugin-title").textContent = data[1];  // plugin_name
+    document.getElementById("plugin-id").textContent = data[0];  // plugin_id
+    document.getElementById("plugin-severity").textContent = getSeverityLabel(data[2]);  // severity
+    document.getElementById("plugin-description").textContent = data[4];  // description
+    document.getElementById("plugin-synopsis").textContent = data[5];  // synopsis
+    document.getElementById("plugin-see-also").textContent = data[6];  // see_also
+    document.getElementById("plugin-output").textContent = data[7];  // plugin_output
+
+    document.getElementById("plugin-modal").style.display = "block";
+}
+
 function fetchStatistics() {
     const db = document.getElementById("database-selector").value;
     fetch("/statistics", {
@@ -148,6 +181,7 @@ function fetchStatistics() {
         });
     });
 }
+
 function fetchPluginDetails(pluginName) {
     const db = document.getElementById("database-selector").value;
 
@@ -167,4 +201,13 @@ function fetchPluginDetails(pluginName) {
     .catch(error => {
         alert("Query failed: " + error);
     });
+}
+
+function closeModal() {
+    document.getElementById("plugin-modal").style.display = "none";
+}
+
+function getSeverityLabel(severity) {
+    const labels = ["Info", "Low", "Medium", "High", "Critical"];
+    return labels[severity] || "Unknown";
 }
