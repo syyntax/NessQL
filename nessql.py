@@ -154,7 +154,7 @@ def parse_nessus(nessus_file, db_path):
             if not host_id:
                 continue
             
-             for item in host.findall(".//ReportItem"):
+            for item in host.findall(".//ReportItem"):
                 plugin_id = int(item.attrib.get("pluginID", 0))
                 plugin_name = item.attrib.get("pluginName", "Unknown")
                 severity = int(item.attrib.get("severity", 0))
