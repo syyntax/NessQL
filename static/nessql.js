@@ -225,3 +225,28 @@ function getSeverityLabel(severity) {
     const labels = ["Info", "Low", "Medium", "High", "Critical"];
     return labels[severity] || "Unknown";
 }
+
+function saveSeverityChange() {
+    const db = document.getElementById("database-selector").value;
+    const pluginId = document.getElementById("plugin-id").textContent;
+    const newSeverity = document.getElementById("plugin-severity").value;
+
+    fetch("/update_severity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ db: db, plugin_id: pluginId, severity: newSeverity })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert("Error: " + data.error);
+        } else {
+            alert("Severity updated successfully.");
+            closeModal(); // Close the modal after updating
+            executeQuery(); // Refresh the results table
+        }
+    })
+    .catch(error => {
+        alert("Update failed: " + error);
+    });
+}

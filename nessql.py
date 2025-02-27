@@ -274,5 +274,30 @@ def query_plugin():
     except sqlite3.Error as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/update_severity", methods=["POST"])
+def update_severity():
+    """Updates the severity of a vulnerability based on user input."""
+    data = request.json
+    db_path = os.path.join("/app/data", data.get("db"))
+    plugin_id = data.get("plugin_id")
+    severity = data.get("severity")
+
+    if not os.path.exists(db_path):
+        return jsonify({"error": "Database not found"}), 400
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE vulnerabilities 
+            SET severity = ? 
+            WHERE plugin_id = ?
+        """, (severity, plugin_id))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Severity updated successfully"})
+    except sqlite3.Error as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
