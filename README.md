@@ -15,3 +15,5 @@ NessQL addresses this by:
 - **Supporting a progress bar** to track `.nessus` file processing in real time.
 
 By using NessQL, security analysts can quickly **identify critical vulnerabilities, explore affected systems, and efficiently manage security data** from Nessus scans.
+
+![NessQL Web UI](images/screenshot01.png)
