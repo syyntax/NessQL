@@ -288,3 +288,8 @@ function saveSeverityChange() {
         alert("Update failed: " + error);
     });
 }
+
+function setQuery(query) {
+    document.getElementById("sql-query").value = query;
+    // executeQuery(); // Automatically runs the query
+}

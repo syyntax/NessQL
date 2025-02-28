@@ -46,6 +46,20 @@ body {
   left: 0;
 }
 
+/* Style links in the left pane */
+.left-pane a {
+  text-decoration: none;  /* Remove underline */
+  color: inherit;         /* Use the default text color */
+  font-weight: bold;      /* Make links stand out */
+  display: block;         /* Ensure links take up full line for easy clicking */
+  padding: 5px 0;         /* Add spacing for better readability */
+}
+
+/* Underline effect on hover */
+.left-pane a:hover {
+  text-decoration: underline; /* Add underline only on hover */
+}
+
 .right-pane {
   right: 0;
 }

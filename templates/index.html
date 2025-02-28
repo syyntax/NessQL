@@ -9,29 +9,31 @@
 </head>
 <body>
     <div class="left-pane">
-        <h2>Section 1</h2>
+        <h2>General Queries</h2>
         <ul>
-            <li>Item 1</li>
-            <li>Item 2</li>
-            <li>Item 3</li>
-            <li>Item 4</li>
-            <li>Item 5</li>
+            <li><a href="#" onclick="setQuery('SELECT * FROM vuln_instances;')">Vulnerabilities By Severity</a></li>
+            <li><a href="#" onclick="setQuery('SELECT fqdn, ip, group_concat(port || &quot;/&quot; || protocol || &quot;/&quot; || service, &quot;; &quot;) AS ports FROM (SELECT DISTINCT(h.ip), h.fqdn, op.port, op.protocol, op.service FROM hosts AS h INNER JOIN open_ports AS op ON h.id = op.host_id AND NOT op.port = 0 ORDER BY op.protocol, op.port ASC) GROUP BY ip;')">Observed Systems</a></li>
+            <li><a href="#" onclick="setQuery('SELECT severity_level, COUNT(DISTINCT v.host_id) AS count_of_hosts FROM vulnerabilities v JOIN (SELECT id, CASE WHEN severity = 1 THEN &quot;Low&quot; WHEN severity = 2 THEN &quot;Medium&quot; WHEN severity = 3 THEN &quot;High&quot; WHEN severity = 4 THEN &quot;Critical&quot; ELSE &quot;Info&quot; END AS severity_level FROM vulnerabilities) severity_mapping ON v.id = severity_mapping.id GROUP BY severity_level ORDER BY CASE WHEN severity_level = &quot;Critical&quot; THEN 1 WHEN severity_level = &quot;High&quot; THEN 2 WHEN severity_level = &quot;Medium&quot; THEN 3 WHEN severity_level = &quot;Low&quot; THEN 4 ELSE 5 END;')">Severity By Count of Hosts</a></li>
         </ul>
-        <h2>Section 2</h2>
+        <h2>Vulnerability Queries</h2>
         <ul>
-            <li>Item 1</li>
-            <li>Item 2</li>
-            <li>Item 3</li>
-            <li>Item 4</li>
-            <li>Item 5</li>
+            <li><a href="#" onclick="setQuery('SELECT * FROM vuln_instances WHERE severity_level = &quot;Critical&quot;')">Critical Vulnerabilities</a></li>
+            <li><a href="#" onclick="setQuery('SELECT * FROM vuln_instances WHERE severity_level = &quot;High&quot;')">High Vulnerabilities</a></li>
+            <li><a href="#" onclick="setQuery('SELECT * FROM vuln_instances WHERE severity_level = &quot;Medium&quot;')">Medium Vulnerabilities</a></li>
+            <li><a href="#" onclick="setQuery('SELECT * FROM vuln_instances WHERE severity_level = &quot;Low&quot;')">Low Vulnerabilities</a></li>
+            <li><a href="#" onclick="setQuery('SELECT * FROM vuln_instances WHERE severity_level = &quot;Info&quot;')">Informational Findings</a></li>
+            <li><a href="#" onclick="setQuery('SELECT * FROM vuln_instances WHERE severity_level = &quot;False Positive&quot;')">False Positives</a></li>
         </ul>
-        <h2>Section 3</h2>
+        <h2>Host Queries</h2>
         <ul>
-            <li>Item 1</li>
-            <li>Item 2</li>
-            <li>Item 3</li>
-            <li>Item 4</li>
-            <li>Item 5</li>
+            <li><a href="#" onclick="setQuery('SELECT DISTINCT(ip) FROM hosts ORDER BY ip ASC;')">Hosts by IP</a></li>
+            <li><a href="#" onclick="setQuery('SELECT COUNT(DISTINCT(h.ip)) AS alive_hosts FROM hosts AS h INNER JOIN open_ports AS op ON h.id = op.host_id AND NOT op.port = 0 ORDER BY h.ip ASC;')">Count of Alive Hosts</a></li>
+            <li><a href="#" onclick="setQuery('SELECT DISTINCT(ip), fqdn AS hostname FROM hosts ORDER BY hostname ASC;')">Hosts by Hostname</a></li>
+            <li><a href="#" onclick="setQuery('SELECT DISTINCT(port), protocol, service from view_ports ORDER BY port ASC;')">Open Ports and Services</a></li>
+            <li><a href="#" onclick="setQuery('SELECT DISTINCT(port), protocol, service from view_ports GROUP BY port ORDER BY port ASC;')">Distinct Open Ports (and Services)</a></li>
+            <li><a href="#" onclick="setQuery('SELECT COUNT(DISTINCT(port)) AS count_of_ports from view_ports;')">Count of All Ports</a></li>
+            <li><a href="#" onclick="setQuery('SELECT COUNT(DISTINCT(port)) AS count_of_ports from view_ports WHERE protocol = &quot;tcp&quot;;')">Count of TCP Ports</a></li>
+            <li><a href="#" onclick="setQuery('SELECT COUNT(DISTINCT(port)) AS count_of_ports from view_ports WHERE protocol = &quot;udp&quot;;')">Count of UDP Ports</a></li>
         </ul>
     </div>
     
