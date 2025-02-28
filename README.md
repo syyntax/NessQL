@@ -16,4 +16,4 @@ NessQL addresses this by:
 
 By using NessQL, security analysts can quickly **identify critical vulnerabilities, explore affected systems, and efficiently manage security data** from Nessus scans.
 
-![NessQL Web UI](images/screenshot01.png)
+![NessQL Web UI](https://cyberhacktics.sfo2.digitaloceanspaces.com/screenshot01.png)
