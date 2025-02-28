@@ -4,6 +4,8 @@ function uploadFile() {
     const fileInput = document.getElementById("file-input");
     const fileError = document.getElementById("file-error");
     const file = fileInput.files[0];
+    const progressBar = document.getElementById("progress-bar");
+    const uploadStatus = document.getElementById("upload-status");
 
     if (!file || !file.name.endsWith(".nessus")) {
         fileError.style.display = "block";
@@ -14,22 +16,32 @@ function uploadFile() {
     const formData = new FormData();
     formData.append("file", file);
 
+    progressBar.style.width = "0%";  // Reset progress bar
+    uploadStatus.textContent = "Uploading...";
+
     fetch("/upload", {
         method: "POST",
         body: formData
     })
+    .then(response => {
+        progressBar.style.width = "50%"; // Midway progress
+        return response.json();
+    })
     .then(response => response.json())
     .then(data => {
         if (data.error) {
+            uploadStatus.textContent = "Upload Failed!";
+            progressBar.style.width = "0%"; // Reset on error
             alert("Error: " + data.error);
-        } else if (data.message) {
-            alert(data.message);
-            loadDatabases();
         } else {
-            alert("Unexpected server response.");
+            progressBar.style.width = "100%"; // Complete
+            uploadStatus.textContent = "Database Created Successfully!";
+            loadDatabases(); // Refresh database list
         }
     })
     .catch(error => {
+        uploadStatus.textContent = "Upload Failed!";
+        progressBar.style.width = "0%"; // Reset on error
         alert("Upload failed: " + error);
     });
 }
