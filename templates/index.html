@@ -69,8 +69,10 @@
         <h2>Execute SQL Query</h2>
         <textarea id="sql-query" rows="5" cols="50" placeholder="Enter SQL query..."></textarea>
         <button onclick="executeQuery()">Run Query</button>
-
-        <h3>Results:</h3>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h3>Results:</h3>
+            <p id="query-result-count"><strong>Records Found:</strong> 0</p>
+        </div>
         <table id="query-results-table" border="1">
             <thead id="query-results-header"></thead>
             <tbody id="query-results-body"></tbody>

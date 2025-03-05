@@ -115,8 +115,13 @@ function fetchPluginDetails(pluginName) {
 function displayResults(columns, rows) {
     const tableHeader = document.getElementById("query-results-header");
     const tableBody = document.getElementById("query-results-body");
+    const resultCount = document.getElementById("query-result-count");
+
     tableHeader.innerHTML = "";
     tableBody.innerHTML = "";
+
+    // Update the query result count
+    resultCount.innerHTML = `<strong>Records Found:</strong> ${rows.length}`;
 
     if (columns.length > 0) {
         const headerRow = document.createElement("tr");
