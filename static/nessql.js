@@ -314,3 +314,20 @@ function setQuery(query) {
     document.getElementById("sql-query").value = query;
     // executeQuery(); // Automatically runs the query
 }
+
+function openFindingPage() {
+    const db = document.getElementById("database-selector").value;
+    const pluginId = document.getElementById("plugin-id").textContent;
+
+    if (!db || !pluginId) {
+        alert("Missing database or plugin ID!");
+        return;
+    }
+
+    // Store the data in sessionStorage instead of passing it in the URL
+    sessionStorage.setItem("selectedDb", db);
+    sessionStorage.setItem("selectedPluginId", pluginId);
+
+    window.open("/static/finding.html", "_blank"); // Open in new tab
+}
+

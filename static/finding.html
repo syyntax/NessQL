@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finding Details</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="plugin-title"></h1>
+        <p><strong>Plugin ID:</strong> <span id="plugin-id"></span></p>
+        <p><strong>Severity:</strong> <span id="plugin-severity"></span></p>
+        <p><strong>Description:</strong> <span id="plugin-description"></span></p>
+        <p><strong>Synopsis:</strong> <span id="plugin-synopsis"></span></p>
+        <p><strong>References:</strong> <span id="plugin-see-also"></span></p>
+        <p><strong>Plugin Output:</strong> <span id="plugin-output"></span></p>
+
+        <h2>Manual Validation Steps</h2>
+        <p id="validation-steps">Coming Soon...</p>
+
+        <h2>Exploit Testing</h2>
+        <p id="exploit-steps">Coming Soon...</p>
+    </div>
+
+    <script src="/static/nessql.js"></script>
+    <script>
+        function loadFindingDetails() {
+            const db = sessionStorage.getItem("selectedDb");
+            const pluginId = sessionStorage.getItem("selectedPluginId");
+    
+            if (!db || !pluginId) {
+                alert("Missing necessary data.");
+                return;
+            }
+    
+            const url = `/get_finding_details?db=${encodeURIComponent(db)}&plugin_id=${encodeURIComponent(pluginId)}`;
+            console.log("Fetching details from:", url);
+    
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert("Error: " + data.error);
+                } else {
+                    document.getElementById("plugin-title").textContent = data.plugin_name;
+                    document.getElementById("plugin-id").textContent = data.plugin_id;
+                    document.getElementById("plugin-severity").textContent = data.severity;
+                    document.getElementById("plugin-description").textContent = data.description;
+                    document.getElementById("plugin-synopsis").textContent = data.synopsis;
+                    document.getElementById("plugin-see-also").textContent = data.see_also;
+                    document.getElementById("plugin-output").textContent = data.plugin_output;
+                }
+            })
+            .catch(error => {
+                alert("Error loading finding details: " + error);
+            });
+        }
+    
+        document.addEventListener("DOMContentLoaded", loadFindingDetails);
+    </script>            
+
+</body>
+</html>

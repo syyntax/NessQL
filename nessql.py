@@ -300,5 +300,48 @@ def update_severity():
     except sqlite3.Error as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/get_finding_details", methods=["GET"])
+def get_finding_details():
+    """Fetches finding details securely from the database."""
+    db_name = request.args.get("db")
+    plugin_id = request.args.get("plugin_id")
+    db_path = os.path.join("/app/data", db_name)
+
+    print(f"[DEBUG] Fetching details for Plugin ID: {plugin_id}")
+    print(f"[DEBUG] Database Path: {db_path}")
+
+    if not os.path.exists(db_path):
+        print("[ERROR] Database not found:", db_path)
+        return jsonify({"error": "Database not found"}), 400
+
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT plugin_id, plugin_name, severity, description, synopsis, see_also, plugin_output
+            FROM vulnerabilities
+            WHERE plugin_id = ?
+        """, (plugin_id,))
+
+        data = cursor.fetchone()
+        conn.close()
+
+        if not data:
+            print("[ERROR] Finding not found for Plugin ID:", plugin_id)
+            return jsonify({"error": "Finding not found"}), 404
+
+        return jsonify({
+            "plugin_id": data[0],
+            "plugin_name": data[1],
+            "severity": data[2],
+            "description": data[3],
+            "synopsis": data[4],
+            "see_also": data[5],
+            "plugin_output": data[6]
+        })
+    except sqlite3.Error as e:
+        print("[ERROR] Database error:", str(e))
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
