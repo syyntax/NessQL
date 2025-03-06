@@ -52,6 +52,10 @@ function loadDatabases() {
     .then(databases => {
         const selector = document.getElementById("database-selector");
         selector.innerHTML = "";
+
+        // Sort databases in alphabetic order
+        databases.sort();
+
         databases.forEach(db => {
             const option = document.createElement("option");
             option.value = db;
